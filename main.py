@@ -5,8 +5,9 @@ from llm_agent import analyze_anomalies
 from notifier import send_telegram_alert
 
 def main():
-    print("1. Setting up database and generating test data...")
-    conn = setup_database()
+    print("1. Setting up database and fetching live Binance data...")
+    # Production Mode: Canlı izleme için inject_anomaly=False
+    conn = setup_database(inject_anomaly=False)
 
     print("2. Running data quality and anomaly checks...")
     check_results = run_all_checks(conn)
@@ -14,7 +15,7 @@ def main():
     anomalies_found = [res for res in check_results if res.get("is_anomaly")]
 
     if not anomalies_found:
-        print("All checks passed! No anomalies detected.")
+        print("✅ All checks passed! Live Binance data pipeline is healthy.")
         return
 
     print(f"\n⚠️ {len(anomalies_found)} anomaly/anomalies detected!")

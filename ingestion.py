@@ -22,7 +22,6 @@ def fetch_live_crypto_data():
         response.raise_for_status()
 
     data = response.json()
-    
     df = pd.DataFrame(data)
     
     # Analiz için kritik sütunları seçiyoruz
@@ -37,7 +36,7 @@ def fetch_live_crypto_data():
     
     return df
 
-def setup_database(inject_anomaly=True):
+def setup_database(inject_anomaly=False):
     conn = duckdb.connect("data_observability.db")
 
     # 1. Canlı Binance API'den veriyi çek
@@ -58,7 +57,7 @@ def setup_database(inject_anomaly=True):
     # 3. Bugünkü canlı veri akışı
     today_df = real_df.copy()
 
-    # Test amacıyla veri hattı hatası enjekte et
+    # Suni anomali enjeksiyonu (Production için varsayılan False)
     if inject_anomaly:
         today_df = today_df.head(15).copy()
         today_df.loc[today_df.index % 2 == 0, 'volume'] = None
@@ -67,5 +66,5 @@ def setup_database(inject_anomaly=True):
     return conn
 
 if __name__ == "__main__":
-    conn = setup_database(inject_anomaly=True)
+    conn = setup_database(inject_anomaly=False)
     print("Binance canlı API verisi başarıyla çekildi ve DuckDB veritabanı güncellendi.")

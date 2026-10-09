@@ -25,8 +25,26 @@ Requirements:
   2. **Recommended Action & Fix SQL:** (Provide practical investigation steps and a sample SQL query to clean or investigate bad records)
 """
 
-    # Doğrudan aktif ve sohbet destekleyen Groq Llama modelleri
-    candidate_models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+    # Garanti çalışan varsayılan metin modelleri
+    candidate_models = [
+        "llama-3.3-70b-versatile",
+        "llama3-70b-8192",
+        "llama3-8b-8192",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it"
+    ]
+
+    # Groq API'sinden hesabınızdaki aktif metin modellerini dinamik olarak çekelim
+    try:
+        models_page = client.models.list()
+        active_text_models = [
+            m.id for m in models_page.data 
+            if not any(x in m.id for x in ['whisper', 'vision', 'guard', 'safetensors'])
+        ]
+        if active_text_models:
+            candidate_models = active_text_models + candidate_models
+    except Exception:
+        pass
 
     last_error = ""
     for model_name in candidate_models:

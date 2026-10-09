@@ -4,7 +4,7 @@ on:
   schedule:
     # Her 30 dakikada bir otomatik çalışır
     - cron: '*/30 * * * *'
-  workflow_dispatch: # GitHub arayüzünden manuel tetikleme butonu ekler
+  workflow_dispatch: # Arayüzden manuel tetikleme imkanı verir
 
 jobs:
   run-observability-check:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/checkout@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 

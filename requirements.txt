@@ -1,6 +1,6 @@
 duckdb
 pandas
-pydantic
 requests
+numpy
 python-dotenv
-google-genai
+groq

@@ -4,7 +4,7 @@ on:
   schedule:
     # Her 30 dakikada bir otomatik çalışır
     - cron: '*/30 * * * *'
-  workflow_dispatch: # Arayüzden manuel tetikleme imkanı verir
+  workflow_dispatch: # GitHub arayüzünden manuel tetikleme butonu
 
 jobs:
   run-observability-check:

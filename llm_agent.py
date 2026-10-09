@@ -25,28 +25,20 @@ Requirements:
   2. **Recommended Action & Fix SQL:** (Provide practical investigation steps and a sample SQL query to clean or investigate bad records)
 """
 
-    try:
-        models_page = client.models.list()
-        text_models = [
-            m.id for m in models_page.data 
-            if "llama" in m.id.lower() and "/" not in m.id and "guard" not in m.id.lower()
-        ]
+    # Doğrudan aktif ve sohbet destekleyen Groq Llama modelleri
+    candidate_models = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
 
-        if not text_models:
-            text_models = [m.id for m in models_page.data if "/" not in m.id]
+    last_error = ""
+    for model_name in candidate_models:
+        try:
+            response = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model=model_name,
+                max_tokens=600
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            last_error = str(e)
+            continue
 
-        selected_model = text_models[0]
-        for pref in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
-            if pref in text_models:
-                selected_model = pref
-                break
-
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model=selected_model,
-            max_tokens=600
-        )
-        return response.choices[0].message.content
-
-    except Exception as e:
-        return f"Groq API Error: {str(e)}"
+    return f"Groq API Error: {last_error}"

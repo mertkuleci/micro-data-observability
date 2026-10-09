@@ -1,0 +1,32 @@
+name: Micro Data Observability Bot
+
+on:
+  schedule:
+    # Her 30 dakikada bir otomatik çalışır
+    - cron: '*/30 * * * *'
+  workflow_dispatch: # GitHub arayüzünden manuel tetikleme butonu ekler
+
+jobs:
+  run-observability-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/checkout@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Data Observability & Anomaly Detection
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python main.py

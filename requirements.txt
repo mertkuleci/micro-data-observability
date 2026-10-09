@@ -1,0 +1,6 @@
+duckdb
+pandas
+pydantic
+requests
+python-dotenv
+google-genai

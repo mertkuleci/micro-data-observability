@@ -3,12 +3,24 @@ import pandas as pd
 import requests
 import numpy as np
 
-BINANCE_API_URL = "https://api.binance.com/api/v3/ticker/24hr"
+# Binance'in bulut sunucuları (GitHub Actions vb.) için engelsiz resmi API adresi
+BINANCE_API_URL = "https://data-api.binance.vision/api/v3/ticker/24hr"
+FALLBACK_API_URL = "https://api.binance.com/api/v3/ticker/24hr"
 
 def fetch_live_crypto_data():
     """Binance Canlı API'sinden 24 saatlik piyasa verilerini çeker."""
-    response = requests.get(BINANCE_API_URL, timeout=10)
-    response.raise_for_status()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
+    try:
+        response = requests.get(BINANCE_API_URL, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.exceptions.RequestException:
+        # Ana endpoint sorun çıkarırsa yedek adresi dene
+        response = requests.get(FALLBACK_API_URL, headers=headers, timeout=10)
+        response.raise_for_status()
+
     data = response.json()
     
     df = pd.DataFrame(data)
@@ -32,7 +44,6 @@ def setup_database(inject_anomaly=True):
     real_df = fetch_live_crypto_data()
 
     # 2. Geçmiş 7 günlük baseline simülasyonu
-    # (Satır sayısına %5 doğal dalgalanma ekliyoruz ki standart sapma 0 olmasın ve Z-Score motoru hesaplama yapabilsin)
     history_data = []
     for days_back in range(7, 0, -1):
         sample_size = int(len(real_df) * np.random.uniform(0.95, 1.05))
@@ -49,9 +60,7 @@ def setup_database(inject_anomaly=True):
 
     # Test amacıyla veri hattı hatası enjekte et
     if inject_anomaly:
-        # Anomali 1: Veri akışı kesintisi (Örn: ~500+ coin yerine sadece ilk 15 coin geldi)
         today_df = today_df.head(15).copy()
-        # Anomali 2: İşlem hacminde (volume) NULL patlaması (%50'den fazla veri boş geldi)
         today_df.loc[today_df.index % 2 == 0, 'volume'] = None
 
     conn.execute("CREATE OR REPLACE TABLE today_transactions AS SELECT * FROM today_df")
